@@ -7,21 +7,17 @@ Encoding Example:
 ```
 #include "cobs.h"
 
+struct customStruct {
+    uint8_t a;
+    uint8_t b;
+};
+
 int main(void)
 {
-    uint8_t retVal = 0;
-    uint8_t data[] = {0x11, 0x22};
-    uint8_t encoded_output[4];
-    COBS::encode_result result;
-    COBS myCOBS;
-
-    result = myCOBS.encode((void *)encoded_output,
-                           sizeof(encoded_output),
-                           (void *)data,
-                           sizeof(data));
-    if (!result.status.err_ok) {
-        retVal = 1;
-    }
+    cobs myCobs;
+    std::vector<uint8_t> encoded;
+    customStruct myStruct;
+    myCobs.encode(encoded, &myStruct);
     return retVal;
 }
 ```
@@ -29,21 +25,17 @@ Decoding Example:
 ```
 #include "cobs.h"
 
+struct customStruct {
+    uint8_t a;
+    uint8_t b;
+};
+
 int main(void)
 {
-    uint8_t retVal = 0;
-    uint8_t encoded_input_data[] = {0x03, 0x11, 0x22, 0x00};
-    uint8_t data[2];
-    COBS::decode_result result;
-    COBS myCOBS;
-
-    result = myCOBS.decode((void *)data,
-                            sizeof(data),
-                            (void *)encoded_input_data,
-                            sizeof(encoded_input_data));
-    if (!result.status.err_ok) {
-        retVal = 1;
-    }
+    cobs myCobs;
+    std::vector<uint8_t> encoded {0x03, 0x11, 0x22, 0x00};
+    customStruct myStruct;
+    myCobs.decode(&myStruct, encoded);
     return retVal;
 }
 ```
