@@ -5,7 +5,7 @@ Just copy and paste cobs.cpp and cobs.h to your project. No dependencies.
 
 Encoding Example:
 ```
-#include "cobs.h"
+#include "Cobs.h"
 
 struct customStruct {
     uint8_t a;
@@ -14,7 +14,7 @@ struct customStruct {
 
 int main(void)
 {
-    cobs myCobs;
+    Cobs myCobs;
     std::vector<uint8_t> encoded;
     customStruct myStruct;
     myCobs.encode(encoded, myStruct);
@@ -32,7 +32,7 @@ struct customStruct {
 
 int main(void)
 {
-    cobs myCobs;
+    Cobs myCobs;
     std::vector<uint8_t> encoded {0x03, 0x11, 0x22, 0x00};
     customStruct myStruct;
     myCobs.decode(&myStruct, encoded);

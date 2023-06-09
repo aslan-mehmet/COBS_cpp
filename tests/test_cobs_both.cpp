@@ -2,7 +2,7 @@
 #include "cobs.h"
 #include <cstring>
 
-TEST(EncodeDecodeTests, DataTest1)
+TEST(High, 1)
 {
     bool isSame;
     struct __attribute__((__packed__)) myStruct{
@@ -20,7 +20,7 @@ TEST(EncodeDecodeTests, DataTest1)
     myStruct mineRx;
     std::vector<uint8_t> encoded;
 
-    cobs myCobs;
+    Cobs myCobs;
     myCobs.encode(encoded, mineTx);
     myCobs.decode(mineRx, encoded);
     isSame = memcmp(&mineRx, &mineTx, sizeof(myStruct)) == 0;

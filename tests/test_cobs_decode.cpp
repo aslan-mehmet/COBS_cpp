@@ -1,76 +1,81 @@
 #include <gtest/gtest.h>
 #include "cobs.h"
 
-TEST(DecodingTests, DecodeDataTest1)
+TEST(RawDecoding, 1)
 {
-    std::vector<uint8_t> encodedData {0x01, 0x01, 0x00};
+    uint8_t encodedData[] = {0x01, 0x01, 0x00};
     uint8_t data[1];
+    uint64_t numOfData;
     uint8_t expectedData[] = {0x00};
-    cobs myCobs;
+    Cobs myCobs;
 
-    myCobs.decode(data, sizeof(data), encodedData);
+    numOfData = myCobs.decode(data, sizeof(data), encodedData, sizeof(encodedData));
 
-    EXPECT_EQ(sizeof(expectedData), sizeof(data));
+    EXPECT_EQ(sizeof(expectedData), numOfData);
 
     for (int i = 0; i < sizeof(expectedData); ++i)
         EXPECT_EQ(expectedData[i], data[i]);
 }
 
-TEST(DecodingTests, DecodeDataTest2)
+TEST(RawDecoding, 2)
 {
-    std::vector<uint8_t> encodedData {0x01, 0x01, 0x01, 0x00};
+    uint8_t encodedData[] = {0x01, 0x01, 0x01, 0x00};
     uint8_t data[2];
+    uint64_t numOfData;
     uint8_t expectedData[] = {0x00, 0x00};
-    cobs myCobs;
+    Cobs myCobs;
 
-    myCobs.decode(data, sizeof(data), encodedData);
+    numOfData = myCobs.decode(data, sizeof(data), encodedData, sizeof(encodedData));
 
-    EXPECT_EQ(sizeof(expectedData), sizeof(data));
+    EXPECT_EQ(sizeof(expectedData), numOfData);
 
     for (int i = 0; i < sizeof(expectedData); ++i)
         EXPECT_EQ(expectedData[i], data[i]);
 }
 
-TEST(DecodingTests, DecodeDataTest3)
+TEST(RawDecoding, 3)
 {
-    std::vector<uint8_t> encodedData {0x03, 0x11, 0x22, 0x02, 0x33, 0x00};
+    uint8_t encodedData[] = {0x03, 0x11, 0x22, 0x02, 0x33, 0x00};
     uint8_t data[4];
+    uint64_t numOfData;
     uint8_t expectedData[] = {0x11, 0x22, 0x00, 0x33};
-    cobs myCobs;
+    Cobs myCobs;
 
-    myCobs.decode(data, sizeof(data), encodedData);
+    numOfData = myCobs.decode(data, sizeof(data), encodedData, sizeof(encodedData));
 
-    EXPECT_EQ(sizeof(expectedData), sizeof(data));
+    EXPECT_EQ(sizeof(expectedData), numOfData);
 
     for (int i = 0; i < sizeof(expectedData); ++i)
         EXPECT_EQ(expectedData[i], data[i]);
 }
 
-TEST(DecodingTests, DecodeDataTest4)
+TEST(RawDecoding, 4)
 {
-    std::vector<uint8_t> encodedData {0x05, 0x11, 0x22, 0x33, 0x44, 0x00};
+    uint8_t encodedData[] = {0x05, 0x11, 0x22, 0x33, 0x44, 0x00};
     uint8_t data[4];
+    uint64_t numOfData;
     uint8_t expectedData[] = {0x11, 0x22, 0x33, 0x44};
-    cobs myCobs;
+    Cobs myCobs;
 
-    myCobs.decode(data, sizeof(data), encodedData);
+    numOfData = myCobs.decode(data, sizeof(data), encodedData, sizeof(encodedData));
 
-    EXPECT_EQ(sizeof(expectedData), sizeof(data));
+    EXPECT_EQ(sizeof(expectedData), numOfData);
 
     for (int i = 0; i < sizeof(expectedData); ++i)
         EXPECT_EQ(expectedData[i], data[i]);
 }
 
-TEST(DecodingTests, DecodeDataTest5)
+TEST(RawDecoding, 5)
 {
-    std::vector<uint8_t> encodedData {0x02, 0x11, 0x01, 0x01, 0x01, 0x00};
+    uint8_t encodedData[] = {0x02, 0x11, 0x01, 0x01, 0x01, 0x00};
     uint8_t data[4];
+    uint64_t numOfData;
     uint8_t expectedData[] = {0x11, 0x00, 0x00, 0x00};
-    cobs myCobs;
+    Cobs myCobs;
 
-    myCobs.decode(data, sizeof(data), encodedData);
+    numOfData = myCobs.decode(data, sizeof(data), encodedData, sizeof(encodedData));
 
-    EXPECT_EQ(sizeof(expectedData), sizeof(data));
+    EXPECT_EQ(sizeof(expectedData), numOfData);
 
     for (int i = 0; i < sizeof(expectedData); ++i)
         EXPECT_EQ(expectedData[i], data[i]);

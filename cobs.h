@@ -17,27 +17,50 @@
 #include <vector>
 #include <stdexcept>
 
-class cobs {
+#define COBS_OVERHEAD_BYTE_COUNT (2u)
+
+enum class CobsErrors {
+    noError,
+    emptySrc,
+    srcTooLong,
+    nullPtr,
+    wontFitToDst,
+    invalidFrame
+};
+
+class Cobs {
 public:
-    void encode(std::vector<uint8_t> &dst, const uint8_t *const src, uint64_t srcLen);
+    uint64_t encode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, uint64_t srcLen);
 
     template <typename data_t>
     void encode(std::vector<uint8_t> &dst, const data_t &src)
     {
         try {
-            encode(dst, reinterpret_cast<const uint8_t *const>(&src), sizeof(data_t));
+            if(dst.size() != (sizeof(data_t)+COBS_OVERHEAD_BYTE_COUNT)) {
+                dst.resize(sizeof(data_t)+COBS_OVERHEAD_BYTE_COUNT);
+            }
+            encode(reinterpret_cast<uint8_t *>(&dst[0]),
+                   dst.size(),
+                   reinterpret_cast<const uint8_t *const>(&src),
+                   sizeof(data_t));
         } catch(...) {
             throw;
         }
     }
 
-    void decode(uint8_t *dst, uint64_t dstLen, const std::vector<uint8_t> &src);
+    uint64_t decode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, uint64_t srcLen);
 
     template <typename data_t>
     void decode(data_t &dst, const std::vector<uint8_t> &src)
     {
         try {
-            decode(reinterpret_cast<uint8_t *>(&dst), sizeof(data_t), src);
+            if(sizeof(data_t) != (src.size()-COBS_OVERHEAD_BYTE_COUNT)) {
+                throw CobsErrors::invalidFrame;
+            }
+            decode(reinterpret_cast<uint8_t *>(&dst),
+                   sizeof(data_t),
+                   reinterpret_cast<const uint8_t *const>(&src[0]),
+                   src.size());
         } catch(...) {
             throw;
         }

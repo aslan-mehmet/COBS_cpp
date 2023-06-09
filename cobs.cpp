@@ -1,76 +1,104 @@
 #include "cobs.h"
 
-#define COBS_PACKET_DELIM (0u)
+#define COBS_FRAME_DELIM (0u)
 #define COBS_DELIM_POINTER_MAX (255u)
 #define COBS_MAX_DATA_SIZE (254u)
+#define COBS_TEMP_DATA (COBS_FRAME_DELIM)
 
 using namespace std;
 
-void cobs::encode(vector<uint8_t> &dst, const uint8_t *const src, uint64_t srcLen)
+uint64_t Cobs::encode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, uint64_t srcLen)
 {
-    uint64_t delimPointer = 1u;
-    uint64_t lastPacketDelimIdx = 0u;
-    uint64_t packetIdx = 0u;
+    struct frame {
+        uint64_t insertedCount;
+        uint8_t *const buf;
 
-    if(srcLen > COBS_MAX_DATA_SIZE) {
-        throw out_of_range("unsupported data size. decrease size");
+        frame(uint8_t *buf):
+            insertedCount{0},
+            buf{buf}
+        {}
+
+        void insert(uint8_t data)
+        {
+            buf[insertedCount] = data;
+            ++insertedCount;
+        }
+    };
+
+    uint64_t delimPointer = 1u;
+    uint64_t lastDelimIdx = 0u;
+    frame f {dst};
+
+    if(dst == nullptr || src == nullptr) {
+        throw CobsErrors::nullPtr;
     }
 
-    dst.clear();
+    if(srcLen == 0u) {
+        throw CobsErrors::emptySrc;
+    }
 
-    dst.push_back(COBS_PACKET_DELIM);
-    packetIdx++;
+    if(srcLen > COBS_MAX_DATA_SIZE) {
+        throw CobsErrors::srcTooLong;
+    }
+
+    if(srcLen + COBS_OVERHEAD_BYTE_COUNT > dstLen) {
+        throw CobsErrors::wontFitToDst;
+    }
+
+    f.insert(COBS_FRAME_DELIM);
 
     for(uint64_t i = 0u; i < srcLen; ++i) {
         uint8_t u8 = src[i];
 
-        if(u8 != COBS_PACKET_DELIM) {
-            dst.push_back(u8);
+        if(u8 != COBS_FRAME_DELIM) {
+            f.insert(u8);
             delimPointer++;
         } else {
-            delimPointer <= COBS_DELIM_POINTER_MAX ?
-            dst[lastPacketDelimIdx] = delimPointer :
-            throw runtime_error("delimiter pointer overflow");
-
+            dst[lastDelimIdx] = delimPointer;
             delimPointer = 1u;
-            dst.push_back(COBS_PACKET_DELIM);
-            lastPacketDelimIdx = packetIdx;
+            lastDelimIdx = f.insertedCount;
+            f.insert(COBS_TEMP_DATA);
         }
-
-        packetIdx++;
     }
 
-    delimPointer <= COBS_DELIM_POINTER_MAX ?
-    dst[lastPacketDelimIdx] = delimPointer :
-    throw runtime_error("delimiter pointer overflow");
+    dst[lastDelimIdx] = delimPointer;
 
-    dst.push_back(COBS_PACKET_DELIM);
+    f.insert(COBS_FRAME_DELIM);
+    return f.insertedCount;
 }
 
-void cobs::decode(uint8_t *dst, uint64_t dstLen, const vector<uint8_t> &src)
+uint64_t Cobs::decode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, uint64_t srcLen)
 {
     uint64_t dataIdx = 0u;
-    uint64_t delimIdx = src[0];
+    uint64_t delimIdx;
 
-    if(dstLen != (src.size()-2)) {
-        throw out_of_range("data and encoded are not compatible");
+    if(dst == nullptr || src == nullptr) {
+        throw CobsErrors::nullPtr;
     }
 
-    if(dstLen > COBS_MAX_DATA_SIZE) {
-        throw out_of_range("unsupported data size. decrease size");
+    if((srcLen <= COBS_OVERHEAD_BYTE_COUNT) || (src[srcLen-1] != COBS_FRAME_DELIM)) {
+        throw CobsErrors::invalidFrame;
     }
 
-    if(src[src.size()-1] != COBS_PACKET_DELIM) {
-        throw runtime_error("invalid encoded data. last item in encoded data should be packet delimiter");
+    if(srcLen > COBS_MAX_DATA_SIZE + COBS_OVERHEAD_BYTE_COUNT) {
+        throw CobsErrors::srcTooLong;
     }
 
-    for(uint64_t srcIdx = 1u; srcIdx < src.size()-1; ++srcIdx) {
+    if(dstLen < srcLen-COBS_OVERHEAD_BYTE_COUNT) {
+        throw CobsErrors::wontFitToDst;
+    }
+
+    delimIdx = src[0];
+
+    for(uint64_t srcIdx = 1u; srcIdx < srcLen-1; ++srcIdx) {
         if(delimIdx == srcIdx) {
-            dst[dataIdx] = COBS_PACKET_DELIM;
+            dst[dataIdx] = COBS_FRAME_DELIM;
             delimIdx += src[srcIdx];
         } else {
             dst[dataIdx] = src[srcIdx];
         }
         dataIdx++;
     }
+
+    return dataIdx;
 }
