@@ -15,37 +15,32 @@
 
 #include <cstdint>
 #include <vector>
-#include <memory>
 #include <stdexcept>
 
 class cobs {
-private:
-    const uint8_t packetDelim;
-    const uint8_t delimPointerMax;
-    const uint8_t maxDataSize;
 public:
-    cobs() :
-        packetDelim{0},
-        delimPointerMax{255},
-        maxDataSize{254}
-    {
-
-    }
-
     void encode(std::vector<uint8_t> &dst, const uint8_t *const src, uint64_t srcLen);
 
     template <typename data_t>
-    void encode(std::vector<uint8_t> &dst, const data_t *const src)
+    void encode(std::vector<uint8_t> &dst, const data_t &src)
     {
-        encode(dst, (uint8_t *)src, sizeof(data_t));
+        try {
+            encode(dst, reinterpret_cast<const uint8_t *const>(&src), sizeof(data_t));
+        } catch(...) {
+            throw;
+        }
     }
 
     void decode(uint8_t *dst, uint64_t dstLen, const std::vector<uint8_t> &src);
 
     template <typename data_t>
-    void decode(data_t *dst, const std::vector<uint8_t> &src)
+    void decode(data_t &dst, const std::vector<uint8_t> &src)
     {
-        decode((uint8_t *)dst, sizeof(data_t), src);
+        try {
+            decode(reinterpret_cast<uint8_t *>(&dst), sizeof(data_t), src);
+        } catch(...) {
+            throw;
+        }
     }
 };
 

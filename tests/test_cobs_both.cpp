@@ -21,8 +21,8 @@ TEST(EncodeDecodeTests, DataTest1)
     std::vector<uint8_t> encoded;
 
     cobs myCobs;
-    myCobs.encode(encoded, &mineTx);
-    myCobs.decode(&mineRx, encoded);
+    myCobs.encode(encoded, mineTx);
+    myCobs.decode(mineRx, encoded);
     isSame = memcmp(&mineRx, &mineTx, sizeof(myStruct)) == 0;
     EXPECT_TRUE(isSame);
 }

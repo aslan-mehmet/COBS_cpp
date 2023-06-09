@@ -1,16 +1,17 @@
 all: encodeTest decodeTest bothTest
 
-bothTest:
-	mkdir -p build
+bothTest: buildFolder
 	g++ -I.. ../cobs.cpp test_cobs_both.cpp -lgtest -lpthread -o build/bothTest
 	build/bothTest
 
-encodeTest:
-	mkdir -p build
+encodeTest: buildFolder
 	g++ -I.. ../cobs.cpp test_cobs_encode.cpp -lgtest -lpthread -o build/encodeTest
 	build/encodeTest
 
-decodeTest:
-	mkdir -p build
+decodeTest: buildFolder
 	g++ -I.. ../cobs.cpp test_cobs_decode.cpp -lgtest -lpthread -o build/decodeTest
 	./build/decodeTest
+
+buildFolder:
+	rm -rf build
+	mkdir -p build

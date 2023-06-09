@@ -17,7 +17,7 @@ int main(void)
     cobs myCobs;
     std::vector<uint8_t> encoded;
     customStruct myStruct;
-    myCobs.encode(encoded, &myStruct);
+    myCobs.encode(encoded, myStruct);
     return retVal;
 }
 ```
