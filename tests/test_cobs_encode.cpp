@@ -2,15 +2,16 @@
 #include "cobs.h"
 #include <iostream>
 
+using namespace cobs;
+
 TEST(RawEncoding, 1)
 {
     uint8_t data[] = {0x00};
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
     uint8_t expectedOutput[] = {0x01, 0x01, 0x00};
-    Cobs myCobs;
 
-    numOfData = myCobs.encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
+    numOfData = encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
     
     EXPECT_EQ(sizeof(expectedOutput), numOfData);
 
@@ -24,9 +25,8 @@ TEST(RawEncoding, 2)
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
     uint8_t expectedOutput[] = {0x01, 0x01, 0x01, 0x00};
-    Cobs myCobs;
 
-    numOfData = myCobs.encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
+    numOfData = encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
     
     EXPECT_EQ(sizeof(expectedOutput), numOfData);
 
@@ -40,9 +40,8 @@ TEST(RawEncoding, 3)
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
     uint8_t expectedOutput[] = {0x03, 0x11, 0x22, 0x02, 0x33, 0x00};
-    Cobs myCobs;
 
-    numOfData = myCobs.encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
+    numOfData = encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
     
     EXPECT_EQ(sizeof(expectedOutput), numOfData);
 
@@ -56,9 +55,8 @@ TEST(RawEncoding, 4)
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
     uint8_t expectedOutput[] = {0x05, 0x11, 0x22, 0x33, 0x44, 0x00};
-    Cobs myCobs;
 
-    numOfData = myCobs.encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
+    numOfData = encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
     
     EXPECT_EQ(sizeof(expectedOutput), numOfData);
 
@@ -72,9 +70,8 @@ TEST(RawEncoding, 5)
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
     uint8_t expectedOutput[] = {0x02, 0x11, 0x01, 0x01, 0x01, 0x00};
-    Cobs myCobs;
 
-    numOfData = myCobs.encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
+    numOfData = encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
     
     EXPECT_EQ(sizeof(expectedOutput), numOfData);
 
@@ -94,9 +91,8 @@ TEST(RawEncoding, 6)
     expectedOutput[255] = 0x00;
     for (int i = 0x01; i <= 0xfe; ++i)
         expectedOutput[i] = i;
-    Cobs myCobs;
 
-    numOfData = myCobs.encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
+    numOfData = encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
     
     EXPECT_EQ(sizeof(expectedOutput), numOfData);
 
@@ -116,9 +112,8 @@ TEST(RawEncoding, 7)
     expectedOutput[255] = 0x00;
     for (int i = 0x01; i <= 0xfe; ++i)
         expectedOutput[i] = i;
-    Cobs myCobs;
 
-    numOfData = myCobs.encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
+    numOfData = encode(encodingOutput, sizeof(encodingOutput), data, sizeof(data));
     
     EXPECT_EQ(sizeof(expectedOutput), numOfData);
 
@@ -133,19 +128,18 @@ TEST(MakeEncodingFail, nullSrc)
         data[i] = 1u;
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
-    Cobs myCobs;
-    CobsErrors err = CobsErrors::noError;
+    Exceptions err = Exceptions::okay;
 
     try {
-        numOfData = myCobs.encode(encodingOutput,
+        numOfData = encode(encodingOutput,
                                   sizeof(encodingOutput),
                                   nullptr,
                                   sizeof(data));
-    } catch(CobsErrors &e) {
+    } catch(Exceptions &e) {
         err = e;
     }
 
-    EXPECT_EQ(err, CobsErrors::nullPtr);
+    EXPECT_EQ(err, Exceptions::nullPtr);
 }
 
 TEST(MakeEncodingFail, nullDst)
@@ -155,41 +149,39 @@ TEST(MakeEncodingFail, nullDst)
         data[i] = 1u;
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
-    Cobs myCobs;
-    CobsErrors err = CobsErrors::noError;
+    Exceptions err = Exceptions::okay;
 
     try {
-        numOfData = myCobs.encode(nullptr,
+        numOfData = encode(nullptr,
                                   sizeof(encodingOutput),
                                   data,
                                   sizeof(data));
-    } catch(CobsErrors &e) {
+    } catch(Exceptions &e) {
         err = e;
     }
 
-    EXPECT_EQ(err, CobsErrors::nullPtr);
+    EXPECT_EQ(err, Exceptions::nullPtr);
 }
 
-TEST(MakeEncodingFail, emptySrc)
+TEST(MakeEncodingFail, emptySrcToEncode)
 {
     uint8_t data[20];
     for(int i = 0; i < sizeof(data); ++i)
         data[i] = 1u;
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
-    Cobs myCobs;
-    CobsErrors err = CobsErrors::noError;
+    Exceptions err = Exceptions::okay;
 
     try {
-        numOfData = myCobs.encode(encodingOutput,
+        numOfData = encode(encodingOutput,
                                   sizeof(encodingOutput),
                                   data,
                                   0);
-    } catch(CobsErrors &e) {
+    } catch(Exceptions &e) {
         err = e;
     }
 
-    EXPECT_EQ(err, CobsErrors::emptySrc);
+    EXPECT_EQ(err, Exceptions::emptySrcToEncode);
 }
 
 TEST(MakeEncodingFail, srcTooLong)
@@ -199,19 +191,18 @@ TEST(MakeEncodingFail, srcTooLong)
         data[i] = 1u;
     uint8_t encodingOutput[1000];
     uint64_t numOfData;
-    Cobs myCobs;
-    CobsErrors err = CobsErrors::noError;
+    Exceptions err = Exceptions::okay;
 
     try {
-        numOfData = myCobs.encode(encodingOutput,
+        numOfData = encode(encodingOutput,
                                   sizeof(encodingOutput),
                                   data,
                                   sizeof(data));
-    } catch(CobsErrors &e) {
+    } catch(Exceptions &e) {
         err = e;
     }
 
-    EXPECT_EQ(err, CobsErrors::srcTooLong);
+    EXPECT_EQ(err, Exceptions::srcTooLong);
 }
 
 TEST(MakeEncodingFail, wontFitToDst)
@@ -221,19 +212,18 @@ TEST(MakeEncodingFail, wontFitToDst)
         data[i] = 1u;
     uint8_t encodingOutput[10];
     uint64_t numOfData;
-    Cobs myCobs;
-    CobsErrors err = CobsErrors::noError;
+    Exceptions err = Exceptions::okay;
 
     try {
-        numOfData = myCobs.encode(encodingOutput,
+        numOfData = encode(encodingOutput,
                                   sizeof(encodingOutput),
                                   data,
                                   sizeof(data));
-    } catch(CobsErrors &e) {
+    } catch(Exceptions &e) {
         err = e;
     }
 
-    EXPECT_EQ(err, CobsErrors::wontFitToDst);
+    EXPECT_EQ(err, Exceptions::wontFitToDst);
 }
 
 int main(int argc, char *argv[])

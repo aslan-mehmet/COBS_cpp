@@ -7,7 +7,8 @@
 
 using namespace std;
 
-uint64_t Cobs::encode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, uint64_t srcLen)
+namespace cobs {
+uint64_t encode(uint8_t *const dst, uint64_t dstLen, const uint8_t *const src, uint64_t srcLen)
 {
     struct frame {
         uint64_t insertedCount;
@@ -30,19 +31,19 @@ uint64_t Cobs::encode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, u
     frame f {dst};
 
     if(dst == nullptr || src == nullptr) {
-        throw CobsErrors::nullPtr;
+        throw Exceptions::nullPtr;
     }
 
     if(srcLen == 0u) {
-        throw CobsErrors::emptySrc;
+        throw Exceptions::emptySrcToEncode;
     }
 
     if(srcLen > COBS_MAX_DATA_SIZE) {
-        throw CobsErrors::srcTooLong;
+        throw Exceptions::srcTooLong;
     }
 
     if(srcLen + COBS_OVERHEAD_BYTE_COUNT > dstLen) {
-        throw CobsErrors::wontFitToDst;
+        throw Exceptions::wontFitToDst;
     }
 
     f.insert(COBS_FRAME_DELIM);
@@ -67,25 +68,27 @@ uint64_t Cobs::encode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, u
     return f.insertedCount;
 }
 
-uint64_t Cobs::decode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, uint64_t srcLen)
+uint64_t decode(uint8_t *const dst, uint64_t dstLen, const uint8_t *const src, uint64_t srcLen)
 {
     uint64_t dataIdx = 0u;
     uint64_t delimIdx;
 
     if(dst == nullptr || src == nullptr) {
-        throw CobsErrors::nullPtr;
+        throw Exceptions::nullPtr;
     }
 
-    if((srcLen <= COBS_OVERHEAD_BYTE_COUNT) || (src[srcLen-1] != COBS_FRAME_DELIM)) {
-        throw CobsErrors::invalidFrame;
+    if((srcLen <= COBS_OVERHEAD_BYTE_COUNT) ||
+        (src[srcLen-1] != COBS_FRAME_DELIM) ||
+        (src[0] == 0u)) {
+        throw Exceptions::invalidFrame;
     }
 
     if(srcLen > COBS_MAX_DATA_SIZE + COBS_OVERHEAD_BYTE_COUNT) {
-        throw CobsErrors::srcTooLong;
+        throw Exceptions::srcTooLong;
     }
 
     if(dstLen < srcLen-COBS_OVERHEAD_BYTE_COUNT) {
-        throw CobsErrors::wontFitToDst;
+        throw Exceptions::wontFitToDst;
     }
 
     delimIdx = src[0];
@@ -94,6 +97,9 @@ uint64_t Cobs::decode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, u
         if(delimIdx == srcIdx) {
             dst[dataIdx] = COBS_FRAME_DELIM;
             delimIdx += src[srcIdx];
+            if(delimIdx >= srcLen) {
+                throw Exceptions::invalidFrame;
+            }
         } else {
             dst[dataIdx] = src[srcIdx];
         }
@@ -102,3 +108,4 @@ uint64_t Cobs::decode(uint8_t *dst, uint64_t dstLen, const uint8_t *const src, u
 
     return dataIdx;
 }
+} // namespace cobs

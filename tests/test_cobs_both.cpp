@@ -2,6 +2,8 @@
 #include "cobs.h"
 #include <cstring>
 
+using namespace cobs;
+
 TEST(High, 1)
 {
     bool isSame;
@@ -20,9 +22,8 @@ TEST(High, 1)
     myStruct mineRx;
     std::vector<uint8_t> encoded;
 
-    Cobs myCobs;
-    myCobs.encode(encoded, mineTx);
-    myCobs.decode(mineRx, encoded);
+    encode(encoded, mineTx);
+    decode(mineRx, encoded);
     isSame = memcmp(&mineRx, &mineTx, sizeof(myStruct)) == 0;
     EXPECT_TRUE(isSame);
 }
